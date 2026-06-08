@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>Sprite Debug</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a1a; color: #eee; font-family: monospace; display: flex; height: 100vh; overflow: hidden; }
+
+  #sidebar {
+    width: 300px; min-width: 300px; background: #111; padding: 14px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  #sidebar h2 { font-size: 15px; color: #ffee00; border-bottom: 1px solid #333; padding-bottom: 6px; }
+
+  label { display: block; font-size: 12px; color: #aaa; margin-bottom: 2px; }
+  input[type=range] { width: 100%; }
+  input[type=number] { width: 70px; background: #222; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; }
+  select { width: 100%; background: #222; border: 1px solid #444; color: #eee; padding: 4px; border-radius: 3px; }
+
+  .row { display: flex; align-items: center; gap: 8px; }
+  .val { min-width: 38px; text-align: right; font-size: 13px; color: #ffee00; }
+
+  button {
+    background: #333; border: 1px solid #555; color: #eee; padding: 6px 10px;
+    border-radius: 4px; cursor: pointer; font-size: 12px;
+  }
+  button:hover { background: #444; }
+  button.active { background: #664400; border-color: #ffaa00; color: #ffee00; }
+
+  .anim-block { background: #1c1c1c; border: 1px solid #333; border-radius: 5px; padding: 8px; }
+  .anim-block h3 { font-size: 12px; color: #88ccff; margin-bottom: 6px; }
+  .anim-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 12px; }
+  .anim-row label { margin: 0; color: #888; min-width: 55px; }
+  .anim-row input[type=number] { width: 55px; }
+
+  #info { font-size: 12px; background: #222; border-radius: 4px; padding: 8px; line-height: 1.8; }
+  #info span { color: #ffee00; }
+
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #canvasWrap {
+    flex: 1; overflow: auto; background: #0d0d0d;
+    display: flex; align-items: flex-start; justify-content: flex-start;
+    padding: 10px;
+  }
+  canvas { display: block; }
+
+  #toolbar {
+    background: #181818; padding: 8px 14px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #333; flex-wrap: wrap;
+  }
+  #toolbar span { font-size: 12px; color: #aaa; }
+
+  #frameStrip {
+    height: 100px; background: #0a0a0a; border-top: 1px solid #333;
+    overflow-x: auto; overflow-y: hidden; display: flex; align-items: center;
+    padding: 5px; gap: 3px;
+  }
+  .thumb {
+    cursor: pointer; border: 2px solid #333; flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  .thumb.selected { border-color: #ffee00; }
+  .thumb.in-range  { border-color: #44ff88; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h2>⚙ 精靈圖除錯工具</h2>
+
+  <div>
+    <label>角色</label>
+    <select id="charSel">
+      <option value="皇">皇</option>
+      <option value="瓜張">瓜張</option>
+      <option value="聾">聾</option>
+      <option value="Action張">Action張</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Frame 寬度 (frameWidth)</label>
+    <div class="row">
+      <input type="range" id="fw" min="50" max="800" value="458">
+      <span class="val" id="fwVal">458</span>
+    </div>
+  </div>
+  <div>
+    <label>Frame 高度 (frameHeight)</label>
+    <div class="row">
+      <input type="range" id="fh" min="50" max="900" value="550">
+      <span class="val" id="fhVal">550</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <button id="btnGrid" class="active" onclick="toggleGrid()">格線</button>
+    <button id="btnIdx"  class="active" onclick="toggleIdx()">編號</button>
+    <button id="btnSingle" onclick="toggleSingle()">單格模式</button>
+  </div>
+
+  <div>
+    <label>縮放</label>
+    <div class="row">
+      <input type="range" id="zoom" min="10" max="100" value="25">
+      <span class="val" id="zoomVal">25%</span>
+    </div>
+  </div>
+
+  <div id="info">
+    圖片尺寸：<span id="imgSize">-</span><br>
+    每列 frames：<span id="cols">-</span><br>
+    總列數：<span id="rows">-</span><br>
+    總 frames：<span id="total">-</span><br>
+    選中 frame：<span id="selFrame">-</span>
+  </div>
+
+  <hr style="border-color:#333">
+  <div>
+    <label>播放動畫 frame 範圍</label>
+    <div class="anim-row">
+      <label>開始</label>
+      <input type="number" id="aniStart" value="0" min="0">
+    </div>
+    <div class="anim-row">
+      <label>結束</label>
+      <input type="number" id="aniEnd" value="14" min="0">
+    </div>
+    <div class="anim-row">
+      <label>速率(fps)</label>
+      <input type="number" id="aniRate" value="10" min="1" max="60">
+    </div>
+    <div class="row" style="margin-top:6px">
+      <button onclick="playRange()">▶ 播放</button>
+      <button onclick="stopAnim()">■ 停止</button>
+    </div>
+  </div>
+
+  <hr style="border-color:#333">
+  <div class="anim-block">
+    <h3>動畫配置（複製到 game.js）</h3>
+    <div id="animDefs">
+      <!-- walk -->
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#aaffaa">walk</label>
+        <input type="number" class="aStart" data-name="walk" value="0"  title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="walk" value="14" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#ffaaaa">punch</label>
+        <input type="number" class="aStart" data-name="punch" value="15" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="punch" value="19" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#aaaaff">kick</label>
+        <input type="number" class="aStart" data-name="kick" value="20" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="kick" value="24" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#ffffaa">jump</label>
+        <input type="number" class="aStart" data-name="jump" value="25" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="jump" value="29" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#ffaaff">hit</label>
+        <input type="number" class="aStart" data-name="hit" value="30" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="hit" value="33" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#ff88ff">specialhit</label>
+        <input type="number" class="aStart" data-name="specialhit" value="34" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="specialhit" value="38" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#888888">death</label>
+        <input type="number" class="aStart" data-name="death" value="39" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="death" value="39" title="end">
+      </div>
+      <div class="anim-row" style="margin-bottom:8px">
+        <label style="color:#ff6600">special</label>
+        <input type="number" class="aStart" data-name="special" value="40" title="start">
+        <span style="color:#555">~</span>
+        <input type="number" class="aEnd"   data-name="special" value="47" title="end">
+      </div>
+    </div>
+    <button onclick="exportConfig()" style="width:100%;margin-top:4px">📋 複製設定</button>
+    <button onclick="applyToGame()" style="width:100%;margin-top:4px;border-color:#44ff88;color:#44ff88">✔ 套用到遊戲</button>
+    <div id="copyMsg" style="font-size:11px;color:#44ff88;margin-top:4px;display:none">已複製到剪貼板！</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="toolbar">
+    <button onclick="prevFrame()">◀ Prev</button>
+    <button onclick="nextFrame()">Next ▶</button>
+    <span>Frame: <b id="curFr">0</b></span>
+    <span>位置: row <b id="curRow">0</b>, col <b id="curCol">0</b></span>
+    <span style="margin-left:12px">↑↓←→ 方向鍵切換 frame</span>
+  </div>
+  <div id="canvasWrap">
+    <canvas id="c"></canvas>
+  </div>
+  <div id="frameStrip"></div>
+</div>
+
+<script>
+const CHARS = { '皇': 'pic/皇精靈圖.png', '瓜張': 'pic/瓜張精靈圖.png', '聾': 'pic/聾精靈圖.png', 'Action張': 'pic/Action張精靈圖.png' };
+
+let img = new Image();
+let fw = 458, fh = 550, zoom = 0.25;
+let showGrid = true, showIdx = true, singleMode = false;
+let selFrame = 0;
+let animTimer = null, animFrames = [], animPos = 0;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// Sync slider values
+function bindSlider(id, valId, key) {
+  const sl = document.getElementById(id);
+  const vl = document.getElementById(valId);
+  sl.addEventListener('input', () => {
+    vl.textContent = sl.value + (id === 'zoom' ? '%' : '');
+    if (id === 'fw') fw = +sl.value;
+    else if (id === 'fh') fh = +sl.value;
+    else zoom = +sl.value / 100;
+    redraw();
+  });
+}
+bindSlider('fw', 'fwVal', 'fw');
+bindSlider('fh', 'fhVal', 'fh');
+bindSlider('zoom', 'zoomVal', 'zoom');
+
+document.getElementById('charSel').addEventListener('change', loadChar);
+
+function loadChar() {
+  const ch = document.getElementById('charSel').value;
+  img = new Image();
+  img.onload = () => { redraw(); buildStrip(); };
+  img.src = CHARS[ch];
+}
+
+function cols() { return Math.floor(img.width / fw); }
+function rows() { return Math.floor(img.height / fh); }
+function total() { return cols() * rows(); }
+function frameX(i) { return (i % cols()) * fw; }
+function frameY(i) { return Math.floor(i / cols()) * fh; }
+
+function redraw() {
+  if (!img.width) return;
+  const c = cols(), r = rows();
+  document.getElementById('imgSize').textContent  = `${img.width} × ${img.height}`;
+  document.getElementById('cols').textContent      = c;
+  document.getElementById('rows').textContent      = r;
+  document.getElementById('total').textContent     = c * r;
+  document.getElementById('curRow').textContent    = Math.floor(selFrame / c);
+  document.getElementById('curCol').textContent    = selFrame % c;
+  document.getElementById('selFrame').textContent  = selFrame;
+
+  if (singleMode) drawSingle();
+  else drawSheet();
+}
+
+function drawSheet() {
+  const w = Math.round(img.width  * zoom);
+  const h = Math.round(img.height * zoom);
+  canvas.width  = w;
+  canvas.height = h;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const c = cols(), fw2 = fw * zoom, fh2 = fh * zoom;
+
+  // anim range highlights
+  const ranges = getAnimRanges();
+  const colors = { walk:'#aaffaa44', punch:'#ffaaaa44', kick:'#aaaaff44', jump:'#ffffaa44', hit:'#ffaaff44' };
+  for (const [name, {start, end}] of Object.entries(ranges)) {
+    ctx.fillStyle = colors[name] || '#ffffff22';
+    for (let i = start; i <= end; i++) {
+      const x = (i % c) * fw2, y = Math.floor(i / c) * fh2;
+      ctx.fillRect(x, y, fw2, fh2);
+    }
+  }
+
+  // selected frame
+  {
+    const x = (selFrame % c) * fw2, y = Math.floor(selFrame / c) * fh2;
+    ctx.strokeStyle = '#ffee00';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x + 1.5, y + 1.5, fw2 - 3, fh2 - 3);
+  }
+
+  if (showGrid) {
+    ctx.strokeStyle = '#ff000066';
+    ctx.lineWidth = 1;
+    for (let col = 0; col <= c; col++) {
+      ctx.beginPath(); ctx.moveTo(col * fw2, 0); ctx.lineTo(col * fw2, h); ctx.stroke();
+    }
+    for (let row = 0; row <= rows(); row++) {
+      ctx.beginPath(); ctx.moveTo(0, row * fh2); ctx.lineTo(w, row * fh2); ctx.stroke();
+    }
+  }
+
+  if (showIdx) {
+    ctx.font = `bold ${Math.max(10, Math.round(fw2 * 0.12))}px monospace`;
+    ctx.textBaseline = 'top';
+    for (let i = 0; i < c * rows(); i++) {
+      const x = (i % c) * fw2, y = Math.floor(i / c) * fh2;
+      ctx.fillStyle = '#00000088';
+      ctx.fillText(i, x + 3, y + 2);
+      ctx.fillStyle = '#ffee00';
+      ctx.fillText(i, x + 2, y + 1);
+    }
+  }
+
+  // click to select frame
+  canvas.onclick = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const col = Math.floor(mx / fw2), row = Math.floor(my / fh2);
+    selFrame = row * c + col;
+    if (selFrame < total()) redraw();
+  };
+}
+
+function drawSingle() {
+  const w = Math.round(fw * zoom * 2), h = Math.round(fh * zoom * 2);
+  canvas.width  = w;
+  canvas.height = h;
+  ctx.clearRect(0, 0, w, h);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, frameX(selFrame), frameY(selFrame), fw, fh, 0, 0, w, h);
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0, 0, w, h);
+}
+
+function buildStrip() {
+  const strip = document.getElementById('frameStrip');
+  strip.innerHTML = '';
+  const th = 80, tw = Math.round(fw / fh * th);
+  const off = document.createElement('canvas');
+  off.width = fw; off.height = fh;
+  const oc = off.getContext('2d');
+
+  for (let i = 0; i < Math.min(total(), 120); i++) {
+    const cv = document.createElement('canvas');
+    cv.width = tw; cv.height = th;
+    cv.className = 'thumb';
+    cv.dataset.frame = i;
+    oc.clearRect(0, 0, fw, fh);
+    oc.drawImage(img, frameX(i), frameY(i), fw, fh, 0, 0, fw, fh);
+    const c2 = cv.getContext('2d');
+    c2.imageSmoothingEnabled = false;
+    c2.drawImage(off, 0, 0, tw, th);
+    // label
+    c2.font = '9px monospace'; c2.fillStyle = '#ffee00';
+    c2.fillText(i, 2, 10);
+    cv.onclick = () => { selFrame = i; redraw(); updateStripHighlight(); };
+    strip.appendChild(cv);
+  }
+}
+
+function updateStripHighlight() {
+  document.querySelectorAll('.thumb').forEach(t => {
+    const i = +t.dataset.frame;
+    t.classList.toggle('selected', i === selFrame);
+    const ranges = getAnimRanges();
+    let inR = false;
+    for (const {start, end} of Object.values(ranges)) if (i >= start && i <= end) inR = true;
+    t.classList.toggle('in-range', inR && i !== selFrame);
+  });
+}
+
+function getAnimRanges() {
+  const out = {};
+  document.querySelectorAll('.aStart').forEach(el => {
+    const name = el.dataset.name;
+    const endEl = document.querySelector(`.aEnd[data-name="${name}"]`);
+    out[name] = { start: +el.value, end: +endEl.value };
+  });
+  return out;
+}
+
+function prevFrame() { if (selFrame > 0) { selFrame--; redraw(); updateStripHighlight(); } }
+function nextFrame() { if (selFrame < total() - 1) { selFrame++; redraw(); updateStripHighlight(); } }
+
+function toggleGrid()   { showGrid = !showGrid;   document.getElementById('btnGrid').classList.toggle('active', showGrid);   redraw(); }
+function toggleIdx()    { showIdx  = !showIdx;    document.getElementById('btnIdx').classList.toggle('active', showIdx);     redraw(); }
+function toggleSingle() { singleMode = !singleMode; document.getElementById('btnSingle').classList.toggle('active', singleMode); redraw(); }
+
+function playRange() {
+  stopAnim();
+  const start = +document.getElementById('aniStart').value;
+  const end   = +document.getElementById('aniEnd').value;
+  const rate  = +document.getElementById('aniRate').value;
+  animFrames = [];
+  for (let i = start; i <= end; i++) animFrames.push(i);
+  animPos = 0;
+  const interval = 1000 / rate;
+  animTimer = setInterval(() => {
+    selFrame = animFrames[animPos % animFrames.length];
+    animPos++;
+    redraw();
+    updateStripHighlight();
+  }, interval);
+}
+
+function stopAnim() {
+  if (animTimer) { clearInterval(animTimer); animTimer = null; }
+}
+
+function exportConfig() {
+  const ranges = getAnimRanges();
+  const lines = Object.entries(ranges).map(([name, {start, end}]) =>
+    `    { name: '${name}', start: ${start}, end: ${end}, rate: 10, repeat: ${name === 'walk' ? -1 : 0} },`
+  );
+  const txt = `const ANIM_DEFS = [\n${lines.join('\n')}\n];\n\n// frameWidth: ${fw}, frameHeight: ${fh}`;
+  navigator.clipboard.writeText(txt).catch(() => {});
+  const msg = document.getElementById('copyMsg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+}
+
+async function applyToGame() {
+  const ranges = getAnimRanges();
+  const body = JSON.stringify({ fw, fh, ranges });
+  await fetch('/debug-apply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+  alert('設定已寫入 game.js！請重新整理遊戲頁面。');
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight') nextFrame();
+  if (e.key === 'ArrowLeft')  prevFrame();
+  if (e.key === 'ArrowDown')  { selFrame = Math.min(selFrame + cols(), total() - 1); redraw(); updateStripHighlight(); }
+  if (e.key === 'ArrowUp')    { selFrame = Math.max(selFrame - cols(), 0);            redraw(); updateStripHighlight(); }
+});
+
+// Auto-redraw when anim config changes
+document.querySelectorAll('.aStart,.aEnd').forEach(el => el.addEventListener('input', () => { redraw(); updateStripHighlight(); }));
+
+// Init
+loadChar();
+</script>
+</body>
+</html>
