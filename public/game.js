@@ -96,7 +96,7 @@ const CHAR_FILE = {
     '皇':      'pic/皇精靈圖.png',
     '瓜張':    'pic/瓜張精靈圖.png',
     '聾':      'pic/聾精靈圖.png',
-    'Action張': 'pic/Action張精靈圖.png',
+    'Action張': 'pic/action張精靈圖.png',
 };
 
 /* Animation frame ranges (0-based, matching user layout) */

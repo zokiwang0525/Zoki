@@ -28,11 +28,6 @@ app.get('/punchcursor.png', (req, res) => {
     res.sendFile(path.join(__dirname, '揮拳.png'));
 });
 
-// 檔名有空格的 Action張 精靈圖 → 提供不含空格的別名 URL
-app.get('/pic/Action張精靈圖.png', (req, res) => {
-    res.sendFile(path.join(__dirname, 'pic', 'Action張 精靈圖.png'));
-});
-
 // Debug tool: patch game.js constants in-place
 app.post('/debug-apply', (req, res) => {
     const { fw, fh, ranges } = req.body;
