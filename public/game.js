@@ -391,12 +391,7 @@ class MenuScene extends Phaser.Scene {
         }).setOrigin(0, 1).setInteractive({ useHandCursor: true });
         rBtn.on('pointerover', () => rBtn.setStyle({ color: '#ffee00' }));
         rBtn.on('pointerout',  () => rBtn.setStyle({ color: '#ffcc66' }));
-        rBtn.on('pointerdown', () => {
-            const code = window.prompt('輸入房間代碼（和朋友輸入同一組就會配對在一起）：');
-            if (code && code.trim()) {
-                this.scene.start('Select', { offline: false, roomCode: code.trim() });
-            }
-        });
+        rBtn.on('pointerdown', () => this.showRoomCodePrompt());
 
         /* 練習模式（工程測試用） */
         const pBtn = this.add.text(GAME_W - 14, GAME_H - 12, '🛠 練習模式', {
@@ -407,6 +402,52 @@ class MenuScene extends Phaser.Scene {
         pBtn.on('pointerover', () => pBtn.setStyle({ color: '#ffee00' }));
         pBtn.on('pointerout',  () => pBtn.setStyle({ color: '#88ccff' }));
         pBtn.on('pointerdown', () => this.scene.start('Select', { offline: true }));
+    }
+
+    /* 遊戲內房間代碼輸入框（取代瀏覽器 prompt，深色金邊風格） */
+    showRoomCodePrompt() {
+        if (document.getElementById('roomCodeOverlay')) return;   /* 避免重複開 */
+
+        const overlay = document.createElement('div');
+        overlay.id = 'roomCodeOverlay';
+        overlay.style.cssText =
+            'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;' +
+            "background:rgba(0,0,0,0.66);font-family:'PingFang TC','Microsoft JhengHei',sans-serif;";
+        overlay.innerHTML =
+            '<div style="background:linear-gradient(160deg,#1c1408,#0c0a14);border:3px solid #ffcc33;' +
+            'border-radius:16px;padding:30px 34px;width:340px;box-shadow:0 0 34px rgba(255,200,50,0.45);text-align:center;">' +
+              '<div style="font-size:25px;font-weight:bold;color:#ffee33;margin-bottom:8px;text-shadow:0 2px 4px #000;">🔑 房間對戰</div>' +
+              '<div style="font-size:13px;color:#cccccc;margin-bottom:20px;line-height:1.6;">和朋友輸入<b style="color:#ffcc66;">同一組代碼</b><br>就會配對在一起對戰</div>' +
+              '<input id="roomCodeInput" type="text" maxlength="20" placeholder="輸入房間代碼…" autocomplete="off" ' +
+              'style="width:100%;box-sizing:border-box;padding:13px 14px;font-size:18px;text-align:center;border-radius:9px;' +
+              'border:2px solid #ffcc33;background:#000;color:#ffee33;outline:none;letter-spacing:2px;margin-bottom:20px;">' +
+              '<div style="display:flex;gap:12px;">' +
+                '<button id="roomCodeCancel" style="flex:1;padding:12px 0;font-size:16px;font-weight:bold;border:none;border-radius:9px;cursor:pointer;background:#444;color:#dddddd;">取消</button>' +
+                '<button id="roomCodeOk" style="flex:1.5;padding:12px 0;font-size:16px;font-weight:bold;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(160deg,#ffcc33,#ff9911);color:#3a1d00;">開始配對</button>' +
+              '</div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+
+        const input = overlay.querySelector('#roomCodeInput');
+        setTimeout(() => input.focus(), 50);
+
+        const close = () => { if (overlay.parentNode) overlay.remove(); };
+        const submit = () => {
+            const code = input.value.trim();
+            if (!code) { input.style.borderColor = '#ff5555'; input.placeholder = '請先輸入代碼'; input.focus(); return; }
+            close();
+            this.scene.start('Select', { offline: false, roomCode: code });
+        };
+
+        overlay.querySelector('#roomCodeOk').onclick = submit;
+        overlay.querySelector('#roomCodeCancel').onclick = close;
+        input.addEventListener('keydown', (e) => {
+            e.stopPropagation();                       /* 不讓 Phaser 攔截按鍵 */
+            if (e.key === 'Enter') submit();
+            else if (e.key === 'Escape') close();
+        });
+        overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) close(); });
+        this.events.once('shutdown', close);           /* 離開場景時清掉 */
     }
 }
 
