@@ -52,29 +52,56 @@ app.post('/debug-apply', (req, res) => {
     res.json({ ok: true });
 });
 
-const queue = [];   // waiting players: { id, socket }
-const rooms = {};   // roomId -> { players:[id,id], chars:{} }
+const queue = [];        // waiting players (random match): { id, socket }
+const codeWaiting = {};  // code -> { id, socket }  房間代碼等待中的玩家
+const rooms = {};        // roomId -> { players:[id,id], chars:{} }
+
+// 把某個玩家從所有等待清單移除（避免同時掛在快速配對與房間代碼）
+function removeFromWaiters(id) {
+    const idx = queue.findIndex(p => p.id === id);
+    if (idx !== -1) queue.splice(idx, 1);
+    for (const c of Object.keys(codeWaiting)) {
+        if (codeWaiting[c].id === id) delete codeWaiting[c];
+    }
+}
+
+// 把兩位玩家配成一間房並通知雙方（p1 為先等待者）
+function pairPlayers(p1socket, p1id, p2socket, p2id) {
+    const roomId = `room_${Date.now()}`;
+    rooms[roomId] = { players: [p1id, p2id], chars: {} };
+    p1socket.join(roomId);
+    p2socket.join(roomId);
+    p1socket.emit('opponentFound', { roomId, playerNum: 1 });
+    p2socket.emit('opponentFound', { roomId, playerNum: 2 });
+}
 
 io.on('connection', (socket) => {
     console.log('connected:', socket.id);
 
     socket.on('joinQueue', () => {
-        // Remove if already in queue
-        const idx = queue.findIndex(p => p.id === socket.id);
-        if (idx !== -1) queue.splice(idx, 1);
+        removeFromWaiters(socket.id);   // 清掉舊的等待狀態
 
         if (queue.length > 0) {
             const opponent = queue.shift();
-            const roomId = `room_${Date.now()}`;
-            rooms[roomId] = { players: [opponent.id, socket.id], chars: {} };
-
-            socket.join(roomId);
-            opponent.socket.join(roomId);
-
-            opponent.socket.emit('opponentFound', { roomId, playerNum: 1 });
-            socket.emit('opponentFound', { roomId, playerNum: 2 });
+            pairPlayers(opponent.socket, opponent.id, socket, socket.id);
         } else {
             queue.push({ id: socket.id, socket });
+            socket.emit('waiting');
+        }
+    });
+
+    /* 房間代碼配對：輸入同一組代碼的兩人會配在一起 */
+    socket.on('joinRoom', ({ code }) => {
+        code = (code || '').trim();
+        if (!code) { socket.emit('waiting'); return; }
+        removeFromWaiters(socket.id);
+
+        const w = codeWaiting[code];
+        if (w && w.id !== socket.id) {
+            delete codeWaiting[code];
+            pairPlayers(w.socket, w.id, socket, socket.id);
+        } else {
+            codeWaiting[code] = { id: socket.id, socket };
             socket.emit('waiting');
         }
     });
@@ -144,8 +171,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        const qi = queue.findIndex(p => p.id === socket.id);
-        if (qi !== -1) queue.splice(qi, 1);
+        removeFromWaiters(socket.id);   // 從快速配對 + 房間代碼等待清單移除
 
         for (const [roomId, room] of Object.entries(rooms)) {
             if (room.players.includes(socket.id)) {

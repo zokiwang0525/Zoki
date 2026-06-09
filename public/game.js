@@ -383,6 +383,21 @@ class MenuScene extends Phaser.Scene {
         /* 數值設定（圖片按鈕，放在練習模式上方） */
         makeImageButton(this, GAME_W - 75, GAME_H - 70, 'btnSettings', 150, () => this.scene.start('Settings'));
 
+        /* 房間對戰：輸入同一組代碼的兩人會配在一起（指定朋友對戰） */
+        const rBtn = this.add.text(14, GAME_H - 12, '🔑 房間對戰（和朋友）', {
+            fontSize: '16px', color: '#ffcc66', fontStyle: 'bold',
+            stroke: '#000', strokeThickness: 3,
+            backgroundColor: '#33221199', padding: { x: 10, y: 6 },
+        }).setOrigin(0, 1).setInteractive({ useHandCursor: true });
+        rBtn.on('pointerover', () => rBtn.setStyle({ color: '#ffee00' }));
+        rBtn.on('pointerout',  () => rBtn.setStyle({ color: '#ffcc66' }));
+        rBtn.on('pointerdown', () => {
+            const code = window.prompt('輸入房間代碼（和朋友輸入同一組就會配對在一起）：');
+            if (code && code.trim()) {
+                this.scene.start('Select', { offline: false, roomCode: code.trim() });
+            }
+        });
+
         /* 練習模式（工程測試用） */
         const pBtn = this.add.text(GAME_W - 14, GAME_H - 12, '🛠 練習模式', {
             fontSize: '16px', color: '#88ccff',
@@ -723,7 +738,8 @@ class SelectScene extends Phaser.Scene {
     constructor() { super('Select'); }
 
     init(data) {
-        this.offline = data?.offline || false;   /* 練習模式：離線選角 */
+        this.offline  = data?.offline || false;   /* 練習模式：離線選角 */
+        this.roomCode = data?.roomCode || null;    /* 房間代碼配對（和指定朋友） */
     }
 
     create() {
@@ -740,8 +756,10 @@ class SelectScene extends Phaser.Scene {
             padding: { top: 5, bottom: 3 },
         }).setOrigin(0.5);
 
-        this.statusTxt = this.add.text(GAME_W / 2, GAME_H - 28,
-            this.offline ? '◀ ▶ 切換，點角色開始練習' : '正在連線中…', {
+        const initStatus = this.offline
+            ? '◀ ▶ 切換，點角色開始練習'
+            : (this.roomCode ? `房間代碼：${this.roomCode}　等待朋友加入…` : '正在連線中…');
+        this.statusTxt = this.add.text(GAME_W / 2, GAME_H - 28, initStatus, {
             fontSize: '20px', color: '#ffee00',
             stroke: '#000', strokeThickness: 4,
         }).setOrigin(0.5);
@@ -755,7 +773,8 @@ class SelectScene extends Phaser.Scene {
             this.roomId = 'practice';   /* 讓 pick() 不被擋 */
         } else {
             this.setupSocket();
-            socket.emit('joinQueue');
+            if (this.roomCode) socket.emit('joinRoom', { code: this.roomCode });
+            else               socket.emit('joinQueue');
         }
     }
 
@@ -986,7 +1005,9 @@ class SelectScene extends Phaser.Scene {
               .off('charsDone').off('opponentDisconnected');
 
         socket.on('waiting', () => {
-            this.statusTxt.setText('等待對手加入…');
+            this.statusTxt.setText(this.roomCode
+                ? `房間代碼：${this.roomCode}　等待朋友加入…`
+                : '等待對手加入…');
         });
 
         socket.on('opponentFound', ({ roomId, playerNum }) => {
@@ -1019,8 +1040,13 @@ class SelectScene extends Phaser.Scene {
 
         socket.on('opponentDisconnected', () => {
             this.roomId = null;
-            this.statusTxt.setText('對手離線，重新配對…');
-            socket.emit('joinQueue');
+            if (this.roomCode) {
+                this.statusTxt.setText(`對手離線，房間代碼：${this.roomCode}　等待朋友加入…`);
+                socket.emit('joinRoom', { code: this.roomCode });
+            } else {
+                this.statusTxt.setText('對手離線，重新配對…');
+                socket.emit('joinQueue');
+            }
         });
     }
 }
