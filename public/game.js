@@ -67,8 +67,10 @@ const CHAR_SPECIAL_SFX = {
 
 /* 角色死亡音效（陣亡時播放） */
 const CHAR_DEATH_SFX = {
-    '聾': 'charsfx2/聾/聾受傷.mp3',
-    '皇': 'charsfx2/皇/皇死掉音效.m4a',
+    '聾':       'charsfx2/聾/聾受傷.mp3',
+    '皇':       'charsfx2/皇/皇死掉音效.m4a',
+    '瓜張':     'charsfx2/誇張/瓜張死掉.m4a',
+    'Action張': 'charsfx2/actoin張/張世明死掉.m4a',
 };
 
 /* 各角色選角影片顯示縮放微調（>1 放大、<1 縮小，用來統一視覺大小） */
