@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="820" viewBox="0 0 1060 820" font-family="'PingFang TC','Microsoft JhengHei','Noto Sans CJK TC',sans-serif">
+  <rect width="1060" height="820" fill="#f7f9fc"/>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#4a5568"/>
+    </marker>
+  </defs>
+
+  <text x="530" y="46" text-anchor="middle" font-size="29" font-weight="bold" fill="#1a202c">延遲處理機制：本地預測 + 伺服器校正</text>
+  <text x="530" y="74" text-anchor="middle" font-size="15" fill="#718096">操作不等網路、先在本地反應；伺服器再持續同步把雙方拉回一致</text>
+
+  <!-- time arrow -->
+  <line x1="40" y1="150" x2="40" y2="700" stroke="#a0aec0" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="34" y="430" text-anchor="middle" font-size="13" fill="#a0aec0" transform="rotate(-90 34 430)">時間 →</text>
+
+  <!-- lane headers -->
+  <rect x="110" y="100" width="200" height="46" rx="10" fill="#ebf8ff" stroke="#3182ce" stroke-width="2.5"/>
+  <text x="210" y="129" text-anchor="middle" font-size="16" font-weight="bold" fill="#2b6cb0">玩家 A(攻擊方）</text>
+  <rect x="430" y="100" width="200" height="46" rx="10" fill="#fff5eb" stroke="#dd6b20" stroke-width="2.5"/>
+  <text x="530" y="129" text-anchor="middle" font-size="16" font-weight="bold" fill="#c05621">伺服器(轉發）</text>
+  <rect x="750" y="100" width="200" height="46" rx="10" fill="#f0fff4" stroke="#38a169" stroke-width="2.5"/>
+  <text x="850" y="129" text-anchor="middle" font-size="16" font-weight="bold" fill="#2f855a">玩家 B(對手）</text>
+
+  <!-- lifelines -->
+  <line x1="210" y1="146" x2="210" y2="710" stroke="#cbd5e0" stroke-width="2" stroke-dasharray="5 5"/>
+  <line x1="530" y1="146" x2="530" y2="710" stroke="#cbd5e0" stroke-width="2" stroke-dasharray="5 5"/>
+  <line x1="850" y1="146" x2="850" y2="710" stroke="#cbd5e0" stroke-width="2" stroke-dasharray="5 5"/>
+
+  <!-- (1) local prediction box on A -->
+  <rect x="92" y="168" width="236" height="58" rx="9" fill="#bee3f8" stroke="#3182ce" stroke-width="2"/>
+  <text x="210" y="192" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#2c5282">① 按出拳 → 立刻播動畫</text>
+  <text x="210" y="212" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#2c5282">＋ 本地先預扣對手血</text>
+  <rect x="360" y="170" width="270" height="54" rx="8" fill="#fffbea" stroke="#d69e2e" stroke-width="1.5"/>
+  <text x="370" y="192" font-size="12.5" fill="#975a16">本地預測:自己的操作不等網路,</text>
+  <text x="370" y="211" font-size="12.5" fill="#975a16">立刻反應 → 手感「零延遲」</text>
+
+  <!-- arrow A -> server -->
+  <line x1="210" y1="252" x2="528" y2="252" stroke="#4a5568" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="365" y="245" text-anchor="middle" font-size="12.5" fill="#4a5568">playerAction + dealDamage</text>
+  <!-- arrow server -> B -->
+  <line x1="530" y1="288" x2="848" y2="288" stroke="#4a5568" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="690" y="281" text-anchor="middle" font-size="12.5" fill="#4a5568">即時轉發</text>
+
+  <!-- (2) B receives -->
+  <rect x="732" y="300" width="236" height="58" rx="9" fill="#c6f6d5" stroke="#38a169" stroke-width="2"/>
+  <text x="850" y="324" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#276749">② 立刻播 A 的出拳</text>
+  <text x="850" y="344" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#276749">＋ 自己的受擊動畫</text>
+  <rect x="360" y="302" width="270" height="54" rx="8" fill="#fffbea" stroke="#d69e2e" stroke-width="1.5"/>
+  <text x="370" y="324" font-size="12.5" fill="#975a16">可靠動作事件:確保對手「一定」</text>
+  <text x="370" y="343" font-size="12.5" fill="#975a16">播到出招,不漏拍</text>
+
+  <!-- (4) anti-flicker lock note on B -->
+  <rect x="700" y="372" width="300" height="48" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="1.5"/>
+  <text x="850" y="392" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#553c9a">④ 受擊動畫鎖定 300ms</text>
+  <text x="850" y="410" text-anchor="middle" font-size="12" fill="#6b46c1">忽略較舊封包,避免畫面跳動/閃爍</text>
+
+  <!-- divider: continuous -->
+  <line x1="70" y1="448" x2="990" y2="448" stroke="#cbd5e0" stroke-width="1.5" stroke-dasharray="3 4"/>
+  <text x="70" y="442" font-size="13" font-weight="bold" fill="#718096">↓ 持續進行(每秒約 50 次,雙向）</text>
+
+  <!-- state sync A->server->B -->
+  <line x1="210" y1="482" x2="528" y2="482" stroke="#4a5568" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="365" y="475" text-anchor="middle" font-size="12.5" fill="#4a5568">playerState 座標/狀態</text>
+  <line x1="530" y1="516" x2="848" y2="516" stroke="#4a5568" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="690" y="509" text-anchor="middle" font-size="12.5" fill="#4a5568">轉發</text>
+
+  <!-- (3) reconcile on B -->
+  <rect x="732" y="528" width="236" height="50" rx="9" fill="#c6f6d5" stroke="#38a169" stroke-width="2"/>
+  <text x="850" y="558" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#276749">③ 校正對手位置與狀態</text>
+  <rect x="360" y="528" width="270" height="50" rx="8" fill="#fffbea" stroke="#d69e2e" stroke-width="1.5"/>
+  <text x="370" y="548" font-size="12.5" fill="#975a16">狀態同步校正:持續把雙方誤差</text>
+  <text x="370" y="566" font-size="12.5" fill="#975a16">拉回一致,血條平滑漸變不硬跳</text>
+
+  <!-- summary -->
+  <rect x="110" y="616" width="840" height="76" rx="12" fill="#edf2f7" stroke="#4a5568" stroke-width="2"/>
+  <text x="530" y="646" text-anchor="middle" font-size="16" font-weight="bold" fill="#2d3748">核心策略</text>
+  <text x="530" y="672" text-anchor="middle" font-size="14.5" fill="#2d3748">本地預測(操作手感即時）　＋　伺服器持續校正(雙方畫面最終一致）</text>
+
+  <text x="530" y="728" text-anchor="middle" font-size="12.5" fill="#a0aec0" font-style="italic">取捨:採客戶端權威換取低延遲(防作弊較弱);未用 rollback netcode,延遲很高時對手畫面會先跳再校正</text>
+</svg>

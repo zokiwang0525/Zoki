@@ -284,6 +284,9 @@ class LoadingScene extends Phaser.Scene {
         for (const [ch, url] of Object.entries(CHAR_DEATH_SFX)) {
             this.load.audio(`death_${ch}`, url);
         }
+        /* 受擊音效：被拳打 / 被踢到 */
+        this.load.audio('sfxPunchHit', 'charsfx2/被拳打音效.mp3');
+        this.load.audio('sfxKickHit',  'charsfx2/被踢到音效.mp3');
         for (const ch of CHAR_LIST) {
             this.load.spritesheet(ch, CHAR_FILE[ch], {
                 frameWidth: FRAME_W, frameHeight: FRAME_H,
@@ -2125,6 +2128,7 @@ class FightScene extends Phaser.Scene {
                 this.blockSparkFX(this.remote.x + this.remote.facing * 25, this.remote.y - bodyH);
             } else {
                 this.hitFX(this.remote.x, this.remote.y - bodyH, p.attackType === 'special');
+                this.playHitSfx(p.attackType);   /* 被拳打/被踢到音效 */
                 this.addCombo();
                 if (!this.practice) this.playRemoteHurt(p.attackType);
             }
@@ -2225,6 +2229,7 @@ class FightScene extends Phaser.Scene {
         p.hp = Math.max(0, p.hp - amount);
         this.stats.oppDmg += amount;   /* 對手傷害統計 */
         this.resetCombo();   /* 被打到 → 自己的連擊中斷 */
+        this.playHitSfx(type);   /* 被拳打/被踢到音效（非格擋的乾淨命中） */
 
         /* clear any in-progress attack */
         p.attacking  = false;
@@ -2527,6 +2532,16 @@ class FightScene extends Phaser.Scene {
         s.play();
         s.once('complete', () => s.destroy());
         this.duckBgm(s);
+    }
+
+    /* ── 受擊音效：被拳打 / 被踢到（短促頻繁，不壓 BGM 以免一直起伏） ── */
+    playHitSfx(type) {
+        const key = type === 'punch' ? 'sfxPunchHit'
+                  : type === 'kick'  ? 'sfxKickHit' : null;
+        if (!key || !this.cache.audio.exists(key)) return;
+        const s = this.sound.add(key, { volume: 0.85 });
+        s.play();
+        s.once('complete', () => s.destroy());
     }
 
     /* ── 角色音效播放期間壓低 BGM，結束再淡回 ── */

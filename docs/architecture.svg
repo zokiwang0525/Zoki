@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="780" viewBox="0 0 1120 780" font-family="'PingFang TC','Microsoft JhengHei','Noto Sans CJK TC',sans-serif">
+  <rect width="1120" height="780" fill="#f7f9fc"/>
+
+  <!-- Title -->
+  <text x="560" y="46" text-anchor="middle" font-size="30" font-weight="bold" fill="#1a202c">資傳武道 ICKombat ─ 系統架構圖</text>
+  <text x="560" y="74" text-anchor="middle" font-size="15" fill="#718096">網頁版 1v1 連線格鬥遊戲(客戶端權威 + 伺服器轉發）</text>
+
+  <!-- dashed box around clients -->
+  <rect x="40" y="100" width="1040" height="230" rx="12" fill="none" stroke="#a0aec0" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="60" y="124" font-size="14" fill="#718096" font-style="italic">實際遊戲運算跑在玩家的瀏覽器端</text>
+
+  <!-- Client A -->
+  <rect x="70" y="135" width="380" height="175" rx="12" fill="#e8f1fb" stroke="#2b6cb0" stroke-width="2.5"/>
+  <text x="260" y="166" text-anchor="middle" font-size="19" font-weight="bold" fill="#2b6cb0">玩家 A 的瀏覽器</text>
+  <rect x="92" y="182" width="336" height="46" rx="8" fill="#ffffff" stroke="#90cdf4" stroke-width="1.5"/>
+  <text x="260" y="210" text-anchor="middle" font-size="15" fill="#2c5282">Phaser 3 遊戲引擎(畫面 / 動畫 / 邏輯）</text>
+  <rect x="92" y="240" width="336" height="46" rx="8" fill="#ffffff" stroke="#90cdf4" stroke-width="1.5"/>
+  <text x="260" y="268" text-anchor="middle" font-size="15" fill="#2c5282">Socket.io Client(即時連線）</text>
+
+  <!-- Client B -->
+  <rect x="670" y="135" width="380" height="175" rx="12" fill="#e8f1fb" stroke="#2b6cb0" stroke-width="2.5"/>
+  <text x="860" y="166" text-anchor="middle" font-size="19" font-weight="bold" fill="#2b6cb0">玩家 B 的瀏覽器</text>
+  <rect x="692" y="182" width="336" height="46" rx="8" fill="#ffffff" stroke="#90cdf4" stroke-width="1.5"/>
+  <text x="860" y="210" text-anchor="middle" font-size="15" fill="#2c5282">Phaser 3 遊戲引擎(畫面 / 動畫 / 邏輯）</text>
+  <rect x="692" y="240" width="336" height="46" rx="8" fill="#ffffff" stroke="#90cdf4" stroke-width="1.5"/>
+  <text x="860" y="268" text-anchor="middle" font-size="15" fill="#2c5282">Socket.io Client(即時連線）</text>
+
+  <!-- Event legend (center) -->
+  <rect x="360" y="360" width="400" height="190" rx="12" fill="#fff5eb" stroke="#dd6b20" stroke-width="2"/>
+  <text x="560" y="388" text-anchor="middle" font-size="16" font-weight="bold" fill="#c05621">透過 Socket.io 傳輸的內容</text>
+  <text x="384" y="418" font-size="14" fill="#7b341e">• playerState：座標 / 動作(約 50 次/秒）</text>
+  <text x="384" y="444" font-size="14" fill="#7b341e">• playerAction：出拳 / 踢 / 大招 / 跳</text>
+  <text x="384" y="470" font-size="14" fill="#7b341e">• dealDamage：造成的傷害</text>
+  <text x="384" y="496" font-size="14" fill="#7b341e">• projectileFired：投射物(大招）</text>
+  <text x="384" y="522" font-size="14" fill="#7b341e">• joinQueue / joinRoom：配對請求</text>
+
+  <!-- Arrows client A <-> server -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#4a5568"/>
+    </marker>
+  </defs>
+  <line x1="260" y1="310" x2="360" y2="470" stroke="#4a5568" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="360" y1="490" x2="260" y2="330" stroke="#4a5568" stroke-width="2.5" marker-end="url(#arrow)" opacity="0"/>
+  <line x1="860" y1="310" x2="760" y2="470" stroke="#4a5568" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Server -->
+  <rect x="330" y="585" width="460" height="150" rx="12" fill="#e8f7ed" stroke="#2f855a" stroke-width="2.5"/>
+  <text x="560" y="615" text-anchor="middle" font-size="19" font-weight="bold" fill="#2f855a">Node.js + Express + Socket.io 伺服器</text>
+  <rect x="350" y="632" width="135" height="44" rx="8" fill="#ffffff" stroke="#9ae6b4" stroke-width="1.5"/>
+  <text x="417" y="659" text-anchor="middle" font-size="13" fill="#276749">靜態網頁服務</text>
+  <rect x="492" y="632" width="135" height="44" rx="8" fill="#ffffff" stroke="#9ae6b4" stroke-width="1.5"/>
+  <text x="559" y="652" text-anchor="middle" font-size="13" fill="#276749">玩家配對</text>
+  <text x="559" y="669" text-anchor="middle" font-size="11" fill="#38a169">佇列 + 房間代碼</text>
+  <rect x="634" y="632" width="135" height="44" rx="8" fill="#ffffff" stroke="#9ae6b4" stroke-width="1.5"/>
+  <text x="701" y="652" text-anchor="middle" font-size="13" fill="#276749">即時訊息轉發</text>
+  <text x="701" y="669" text-anchor="middle" font-size="11" fill="#38a169">A 的動作 → B</text>
+  <text x="560" y="715" text-anchor="middle" font-size="13" fill="#718096" font-style="italic">只轉發訊息、不跑遊戲運算　→　部署於 Render 雲端(WebSocket / wss）</text>
+
+  <!-- arrows server to/from clients (bidirectional indicators) -->
+  <line x1="430" y1="585" x2="290" y2="312" stroke="#2f855a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="690" y1="585" x2="830" y2="312" stroke="#2f855a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- GitHub -> Render -->
+  <rect x="40" y="640" width="170" height="60" rx="10" fill="#edf2f7" stroke="#4a5568" stroke-width="2"/>
+  <text x="125" y="666" text-anchor="middle" font-size="14" font-weight="bold" fill="#2d3748">GitHub 程式碼庫</text>
+  <text x="125" y="686" text-anchor="middle" font-size="12" fill="#718096">git push 推送</text>
+  <line x1="210" y1="670" x2="328" y2="660" stroke="#4a5568" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+  <text x="250" y="645" font-size="12" fill="#718096">自動部署</text>
+</svg>
