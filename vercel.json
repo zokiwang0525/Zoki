@@ -1,0 +1,18 @@
+{
+  "cleanUrls": false,
+  "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/index.html", "destination": "/public/index.html" },
+    { "source": "/game.js", "destination": "/public/game.js" },
+    { "source": "/assets/(.*)", "destination": "/物件/$1" },
+    { "source": "/charvideos/(.*)", "destination": "/選角動畫/$1" },
+    { "source": "/portraits/(.*)", "destination": "/角色頭貼/$1" },
+    { "source": "/uibtn/(.*)", "destination": "/ui按鈕/$1" },
+    { "source": "/charsfx/(.*)", "destination": "/選角音效/$1" },
+    { "source": "/charsfx2/(.*)", "destination": "/角色音效/$1" },
+    { "source": "/scenebgm/(.*)", "destination": "/場景音效/$1" },
+    { "source": "/loadingsfx.mp3", "destination": "/Loading音效.mp3" },
+    { "source": "/favicon.png", "destination": "/拳擊手套.png" },
+    { "source": "/punchcursor.png", "destination": "/揮拳.png" }
+  ]
+}

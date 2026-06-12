@@ -113,8 +113,12 @@ const ANIM_DEFS = [
     { name: 'special',  start: 40, end: 47, rate: 10, repeat:  0 },
 ];
 
-/* ── Socket (global, persistent) ── */
-const socket = io();
+/* ── Socket (global, persistent) ──
+   前後端分離:線上(Vercel)連到 Koyeb 伺服器;本機開發連同源。
+   ↓↓↓ 部署 Koyeb 後,把這行網址換成你的 Koyeb 網址 ↓↓↓ */
+const GAME_SERVER = 'https://YOUR-APP.koyeb.app';
+const _isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+const socket = _isLocal ? io() : io(GAME_SERVER);
 
 /* ── 共用：圖片按鈕（像素級點擊判定，hover 放大）
    breakFx=true 時點擊會換成碎掉的按鈕圖再執行（目前只有開始遊戲用） ── */

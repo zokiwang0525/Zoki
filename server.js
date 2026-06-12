@@ -6,7 +6,10 @@ const { Server } = require('socket.io');
 
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server);
+/* 前後端分離部署:允許跨網域連線(前端在 Vercel,伺服器在 Koyeb） */
+const io     = new Server(server, {
+    cors: { origin: '*', methods: ['GET', 'POST'] },
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
