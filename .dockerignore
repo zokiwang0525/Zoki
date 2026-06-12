@@ -1,0 +1,20 @@
+# Fly 上只跑 Socket.io 伺服器,前端與素材都在 Vercel → 排除大型檔案讓映像很小
+node_modules
+.git
+.gitignore
+.claude
+.DS_Store
+**/.DS_Store
+docs
+pic
+物件
+選角動畫
+角色頭貼
+ui按鈕
+選角音效
+角色音效
+場景音效
+拳擊手套.png
+揮拳.png
+Loading音效.mp3
+vercel.json
