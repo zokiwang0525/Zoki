@@ -43,10 +43,10 @@ const CHAR_PORTRAITS = {
 
 /* 選角動畫影片（有定義的角色用影片卡，其餘用精靈動畫） */
 const CHAR_VIDEOS = {
-    '皇':       'charvideos/皇絜如_key.webm',
-    '瓜張':     'charvideos/誇彰.webm',
-    '聾':       'charvideos/張家聾_key.webm',
-    'Action張': 'charvideos/Action張_key.webm',
+    '皇':       'charvideos/皇絜如_key_v2.webm',
+    '瓜張':     'charvideos/誇彰_v2.webm',
+    '聾':       'charvideos/張家聾_key_v2.webm',
+    'Action張': 'charvideos/Action張_key_v2.webm',
 };
 
 /* 選角音效（滑鼠移到角色上播放） */
