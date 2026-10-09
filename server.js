@@ -16,7 +16,10 @@ const isProd = process.env.NODE_ENV === 'production';
 
 app.use(express.json());
 if (isProd) app.get('/debug.html', (req, res) => res.status(404).end());
-app.use(express.static(path.join(__dirname, 'public')));
+/* 網頁與 game.js 每次都向伺服器確認是否有新版(否則 Cloudflare 會讓瀏覽器快取 4 小時) */
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
+}));
 /* 圖片、影片、音效讓瀏覽器快取 7 天(重玩不必重新下載);改素材時請換檔名 */
 const cached = { maxAge: '7d' };
 app.use('/pic',  express.static(path.join(__dirname, 'pic'), cached));
