@@ -11,7 +11,11 @@ const io     = new Server(server, {
     cors: { origin: '*', methods: ['GET', 'POST'] },
 });
 
+/* 上線時(NODE_ENV=production)關閉除錯工具,避免任何人改寫 game.js */
+const isProd = process.env.NODE_ENV === 'production';
+
 app.use(express.json());
+if (isProd) app.get('/debug.html', (req, res) => res.status(404).end());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/pic',  express.static(path.join(__dirname, 'pic')));
 app.use('/assets',     express.static(path.join(__dirname, '物件')));
@@ -33,6 +37,7 @@ app.get('/punchcursor.png', (req, res) => {
 
 // Debug tool: patch game.js constants in-place
 app.post('/debug-apply', (req, res) => {
+    if (isProd) return res.status(404).end();
     const { fw, fh, ranges } = req.body;
     const gamePath = path.join(__dirname, 'public', 'game.js');
     let src = fs.readFileSync(gamePath, 'utf8');
@@ -188,4 +193,5 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+const HOST = process.env.HOST;   // 主機上設 127.0.0.1,只讓 Caddy 連進來
+server.listen(PORT, HOST, () => console.log(`http://localhost:${PORT}`));
