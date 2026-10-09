@@ -35,18 +35,18 @@ const CHAR_LIST = ['皇', '瓜張', '聾', 'Action張'];
 
 /* 角色頭貼 */
 const CHAR_PORTRAITS = {
-    '皇':       'portraits/皇大頭.PNG',
-    '瓜張':     'portraits/瓜張大頭.PNG',
-    '聾':       'portraits/聾大頭.PNG',
-    'Action張': 'portraits/Action張大頭.PNG',
+    '皇':       'portraits/皇大頭.webp',
+    '瓜張':     'portraits/瓜張大頭.webp',
+    '聾':       'portraits/聾大頭.webp',
+    'Action張': 'portraits/Action張大頭.webp',
 };
 
 /* 選角動畫影片（有定義的角色用影片卡，其餘用精靈動畫） */
 const CHAR_VIDEOS = {
-    '皇':       'charvideos/皇絜如_key.webm',
-    '瓜張':     'charvideos/誇彰.webm',
-    '聾':       'charvideos/張家聾_key.webm',
-    'Action張': 'charvideos/Action張_key.webm',
+    '皇':       'charvideos/皇絜如_key_s.webm',
+    '瓜張':     'charvideos/誇彰_s.webm',
+    '聾':       'charvideos/張家聾_key_s.webm',
+    'Action張': 'charvideos/Action張_key_s.webm',
 };
 
 /* 選角音效（滑鼠移到角色上播放） */
@@ -83,22 +83,22 @@ const CHAR_VIDEO_SCALE = {
 
 /* 關卡列表 */
 const STAGE_LIST = [
-    { key: 'yard',    file: 'pic/yard.jpg',                   label: '球　場' },
-    { key: 'stage02', file: 'pic/七館.PNG',                   label: '七　館',   floor: 515 },
-    { key: 'stage01', file: 'pic/background_01_pixelate.png', label: '像素城市' },
-    { key: 'stage03', file: 'pic/七館黑夜版.png',             label: '七館夜版', floor: 515 },
-    { key: 'stage04', file: 'pic/電競房.png',                 label: '電競房' },
-    { key: 'stage05', file: 'pic/鬥舞室.png',                 label: '鬥舞室' },
-    { key: 'stage06', file: 'pic/泳池.jpg',                   label: '泳　池' },
-    { key: 'stage07', file: 'pic/操場夜景.jpg',               label: '操場夜景' },
+    { key: 'yard',    file: 'pic/yard.webp',                   label: '球　場' },
+    { key: 'stage02', file: 'pic/七館.webp',                   label: '七　館',   floor: 515 },
+    { key: 'stage01', file: 'pic/background_01_pixelate.webp', label: '像素城市' },
+    { key: 'stage03', file: 'pic/七館黑夜版.webp',             label: '七館夜版', floor: 515 },
+    { key: 'stage04', file: 'pic/電競房.webp',                 label: '電競房' },
+    { key: 'stage05', file: 'pic/鬥舞室.webp',                 label: '鬥舞室' },
+    { key: 'stage06', file: 'pic/泳池.webp',                   label: '泳　池' },
+    { key: 'stage07', file: 'pic/操場夜景.webp',               label: '操場夜景' },
 ];
 
 /* sprite file paths (Action張 has a space in filename) */
 const CHAR_FILE = {
-    '皇':      'pic/皇精靈圖.png',
-    '瓜張':    'pic/瓜張精靈圖.png',
-    '聾':      'pic/聾精靈圖.png',
-    'Action張': 'pic/action張精靈圖.png',
+    '皇':      'pic/皇精靈圖.webp',
+    '瓜張':    'pic/瓜張精靈圖.webp',
+    '聾':      'pic/聾精靈圖.webp',
+    'Action張': 'pic/action張精靈圖.webp',
 };
 
 /* Animation frame ranges (0-based, matching user layout) */
@@ -197,7 +197,7 @@ class BootScene extends Phaser.Scene {
     constructor() { super('Boot'); }
 
     preload() {
-        this.load.image('loadscreen', 'pic/load.png');
+        this.load.image('loadscreen', 'pic/load.webp');
         /* 自訂拳頭游標精靈圖（2360×700，三格） */
         this.load.spritesheet('punchCursor', 'punchcursor.png', {
             frameWidth: 786, frameHeight: 700,
@@ -252,30 +252,30 @@ class LoadingScene extends Phaser.Scene {
         for (const s of STAGE_LIST) {
             this.load.image(s.key, s.file);
         }
-        this.load.image('selectbg', 'pic/選角背景.PNG');
-        this.load.image('logo',     'pic/Logo.png');
+        this.load.image('selectbg', 'pic/選角背景.webp');
+        this.load.image('logo',     'pic/Logo.webp');
         this.load.audio('loadingSfx', 'loadingsfx.mp3');
         this.load.audio('battleBgm', 'scenebgm/場景音效.MP3');
         this.load.audio('winSfx',  'scenebgm/You win音效.mp3');
         this.load.audio('loseSfx', 'scenebgm/You lose 音效.mp3');
         this.load.audio('btnBreakSfx', 'scenebgm/按鈕破碎聲音.mp3');
-        this.load.image('youwin',   'pic/You win.PNG');
-        this.load.image('youlose',  'pic/You lose.PNG');
-        this.load.image('btnStart',    'uibtn/開始遊戲按鈕.PNG');
-        this.load.image('btnTutorial', 'uibtn/操作引導按鈕.png');
-        this.load.image('btnReplay',   'uibtn/再玩一次按鈕.PNG');
-        this.load.image('btnSettings',  'uibtn/數值設定按鈕.png');
-        this.load.image('btnRandom',     'uibtn/隨機地圖按鈕.png');
-        this.load.image('btnRandomChar', 'uibtn/隨機角色按鈕.png');
-        this.load.image('btnBroken',     'uibtn/按鈕碎掉.png');
-        this.load.image('btnBack',       'uibtn/回上一頁按鈕.png');
-        this.load.image('dude',   'assets/dude.png');
-        this.load.image('vodka',  'assets/明的伏特加.png');
-        this.load.image('kaobei', 'assets/靠杯.png');
-        this.load.image('trophy', 'assets/獎盃.png');
-        this.load.image('combo',  'assets/combo.png');
+        this.load.image('youwin',   'pic/You win.webp');
+        this.load.image('youlose',  'pic/You lose.webp');
+        this.load.image('btnStart',    'uibtn/開始遊戲按鈕.webp');
+        this.load.image('btnTutorial', 'uibtn/操作引導按鈕.webp');
+        this.load.image('btnReplay',   'uibtn/再玩一次按鈕.webp');
+        this.load.image('btnSettings',  'uibtn/數值設定按鈕.webp');
+        this.load.image('btnRandom',     'uibtn/隨機地圖按鈕.webp');
+        this.load.image('btnRandomChar', 'uibtn/隨機角色按鈕.webp');
+        this.load.image('btnBroken',     'uibtn/按鈕碎掉.webp');
+        this.load.image('btnBack',       'uibtn/回上一頁按鈕.webp');
+        this.load.image('dude',   'assets/dude.webp');
+        this.load.image('vodka',  'assets/明的伏特加.webp');
+        this.load.image('kaobei', 'assets/靠杯.webp');
+        this.load.image('trophy', 'assets/獎盃.webp');
+        this.load.image('combo',  'assets/combo.webp');
         for (let i = 1; i <= 8; i++) {
-            this.load.image(`trash${i}`, `assets/皇大招/垃圾${i}.png`);
+            this.load.image(`trash${i}`, `assets/皇大招/垃圾${i}.webp`);
         }
         for (const [ch, url] of Object.entries(CHAR_PORTRAITS)) {
             this.load.image(`portrait_${ch}`, url);

@@ -17,14 +17,16 @@ const isProd = process.env.NODE_ENV === 'production';
 app.use(express.json());
 if (isProd) app.get('/debug.html', (req, res) => res.status(404).end());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/pic',  express.static(path.join(__dirname, 'pic')));
-app.use('/assets',     express.static(path.join(__dirname, '物件')));
-app.use('/charvideos', express.static(path.join(__dirname, '選角動畫')));
-app.use('/portraits',  express.static(path.join(__dirname, '角色頭貼')));
-app.use('/uibtn',      express.static(path.join(__dirname, 'ui按鈕')));
-app.use('/charsfx',    express.static(path.join(__dirname, '選角音效')));
-app.use('/charsfx2',   express.static(path.join(__dirname, '角色音效')));
-app.use('/scenebgm',   express.static(path.join(__dirname, '場景音效')));
+/* 圖片、影片、音效讓瀏覽器快取 7 天(重玩不必重新下載);改素材時請換檔名 */
+const cached = { maxAge: '7d' };
+app.use('/pic',  express.static(path.join(__dirname, 'pic'), cached));
+app.use('/assets',     express.static(path.join(__dirname, '物件'), cached));
+app.use('/charvideos', express.static(path.join(__dirname, '選角動畫'), cached));
+app.use('/portraits',  express.static(path.join(__dirname, '角色頭貼'), cached));
+app.use('/uibtn',      express.static(path.join(__dirname, 'ui按鈕'), cached));
+app.use('/charsfx',    express.static(path.join(__dirname, '選角音效'), cached));
+app.use('/charsfx2',   express.static(path.join(__dirname, '角色音效'), cached));
+app.use('/scenebgm',   express.static(path.join(__dirname, '場景音效'), cached));
 app.get('/loadingsfx.mp3', (req, res) => {
     res.sendFile(path.join(__dirname, 'Loading音效.mp3'));
 });
